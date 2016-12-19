@@ -12,6 +12,7 @@ Implemented:
  * Colorful output;
  * Choice of the color scheme;
  * Bird's movement.
+ * AI for the non-level-randomization implementation (-a option)
 
 Not implemented:
  * Level randomization;
