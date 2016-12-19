@@ -32,8 +32,6 @@
 #    Fixed with double buffering.
 #
 
-ai=false
-
 while getopts "a" arg
 do
     case $arg in
