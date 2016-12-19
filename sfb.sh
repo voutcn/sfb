@@ -6,7 +6,7 @@
 # See LICENSE for details.
 #
 # sfb -- Flappy Bird clone written in GNU sed.
-# 
+#
 # Implemented:
 #  * Collisions;
 #  * Level generation;
@@ -20,11 +20,11 @@
 # Not implemented:
 #  * Level randomization;
 #  * Background music (?)
-# 
+#
 # Move up with `k` button. No more movements implemented. It's original way,
 #
 # Problems:
-#  * `read` on Solaris can't take floating-point timeout (-t) argument. 
+#  * `read` on Solaris can't take floating-point timeout (-t) argument.
 #    Setting it to 1 second makes game slowly.
 #  * On Linux you have to put `gsed` binary (or link to GNU sed) in $PATH.
 #    Fixed.
@@ -32,12 +32,26 @@
 #    Fixed with double buffering.
 #
 
+ai=false
+
+while getopts "a" arg
+do
+    case $arg in
+        a) ai=true;;
+        ?) echo "unkonw argument"; exit 1;;
+        esac
+done
+
+shift $(($OPTIND - 1))
+
 colorize="cat"
 if [ $# -ne 1 ]
 then
-    echo -e "\tUsage: $0 <none|light|full>"
+    echo -e "\tUsage: $0 [-a] <none|light|full>"
     echo ""
-    echo -e "\tArgument sets colorizing model. If game lags with full"
+    echo -e "\toptions:"
+    echo -e "\t    -a    enabling AI"
+    echo -e "\tThe last rgument sets colorizing model. If game lags with full"
     echo -e "\tcolorizing, try to set it lighter."
     exit
 fi
@@ -246,9 +260,11 @@ colorize_full() {
 
 clear
 running=1
+t="8"
 while [ 1 -eq $running ]
 do
-    tput cup 0 0 
+    tput cup 0 0
+
     echo "${field}" | $colorize
     running=$(echo "$field" | $sed -nr \
     '
@@ -361,8 +377,18 @@ do
         }
         : inc_end
     ')
-    key=''
-    read -s -t $timeout -n1 key
+
+    if [ ${ai} ]; then
+        t=$(($t + 1))
+        key='g'
+        if [ $t -eq 10 ]; then
+            t=0; key='k';
+        fi
+    else
+        read -s -t $timeout -n1 key
+        # if [ "$key" == "k" ]; then echo "$t" >> log; fi # uncomment this line for manual training
+    fi
+
     field=$(echo -e "${key}\n${field}" | $sed -r \
     '
         # Checks "k" is pressed and sets bird"s direction to top
